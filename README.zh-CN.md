@@ -4,6 +4,12 @@
 
 > English docs: [README.md](README.md)
 
+**源码**：[github.com/Z-PixelCode/dsh-vscode-bridge](https://github.com/Z-PixelCode/dsh-vscode-bridge) ·
+[问题反馈](https://github.com/Z-PixelCode/dsh-vscode-bridge/issues) ·
+[更新日志](CHANGELOG.md) ·
+[架构说明](docs/ARCHITECTURE.md) ·
+[参与贡献](CONTRIBUTING.md)
+
 [![CI](https://github.com/Z-PixelCode/dsh-vscode-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/Z-PixelCode/dsh-vscode-bridge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.85-blue.svg)](https://code.visualstudio.com/)

@@ -4,6 +4,12 @@ Run **[DeepSeek Harness](https://github.com/deepseek-ai)** (DSH) inside VS Code:
 
 > 中文文档：[README.zh-CN.md](README.zh-CN.md)
 
+**Source**: [github.com/Z-PixelCode/dsh-vscode-bridge](https://github.com/Z-PixelCode/dsh-vscode-bridge) ·
+[Issues](https://github.com/Z-PixelCode/dsh-vscode-bridge/issues) ·
+[Changelog](CHANGELOG.md) ·
+[Architecture](docs/ARCHITECTURE.md) ·
+[Contributing](CONTRIBUTING.md)
+
 [![CI](https://github.com/Z-PixelCode/dsh-vscode-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/Z-PixelCode/dsh-vscode-bridge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.85-blue.svg)](https://code.visualstudio.com/)

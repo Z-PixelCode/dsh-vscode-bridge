@@ -1,7 +1,7 @@
 {
   "name": "dsh-vscode-bridge",
   "displayName": "DSH VS Code Bridge",
-  "description": "把 VS Code 暴露成一个 MCP server，让 DeepSeek Harness 能读取编辑器上下文与 Problems、跳转文件、应用编辑并提出可接受/拒绝的 diff。",
+  "description": "DeepSeek Harness (DSH) inside VS Code: native sidebar chat plus an approval gate that turns every AI file edit into a reviewable diff. Zero dependencies.",
   "version": "0.17.0",
   "publisher": "Z-PixelCode",
   "license": "MIT",
@@ -329,6 +329,10 @@
     "untrustedWorkspaces": {
       "supported": false,
       "description": "需要启动本地 dsh 子进程并写入工作区，不在不可信工作区运行。"
+    },
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "需要真实的本地文件系统（会话根 = 工作区目录）。"
     }
   },
   "scripts": {
