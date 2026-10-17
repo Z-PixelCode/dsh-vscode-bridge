@@ -1,0 +1,20 @@
+# 开发/测试资料不进安装包
+.vscode/**
+.github/**
+test/**
+docs/**
+build/**
+*.vsix
+*.log
+.gitignore
+.vscodeignore
+CONTRIBUTING.md
+CHANGELOG.md
+LICENSE
+**/*.map
+
+# 源码要留（扩展没有构建步骤，直接跑 src/*.js）
+!src/**
+!assets/**
+!dsh-bundle/**
+build/vsix/

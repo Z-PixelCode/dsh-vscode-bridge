@@ -1,0 +1,27 @@
+# DSH 侧配置型 bundle：把 VS Code Bridge 的 MCP server 挂进来
+#
+# 这是一个「配置型 bundle」：没有 Host/Client 入口代码，只靠本补丁插入一条
+# @deepseek-ai/dsh-mcp-client 记录。工具会以 mcp__vscode__<tool> 出现在模型侧。
+#
+# 安装：用 Plugin Manager（GUI 侧栏 Plugins 面板 / plugin_manager 工具）安装本目录所在的包，
+#       或把下面这段直接追加到 $DSH_HOME/profiles/<profile>/cordis.patch.yml 的数组里。
+#
+# 注意：
+#  - url / token 必须与 VS Code 扩展实际监听的端口、令牌一致
+#    （扩展会把它们写到 <工作区>/.vscode/dsh-bridge.json，也会在窗口右下角提示 URL）
+#  - failOnStartupError 保持 false：VS Code 没开时 DSH 照常启动，只是看不到这些工具。
+#    想让 VS Code 没开就启动失败，改成 true。
+#  - 明文令牌仅适用于本机 demo。正式使用请把令牌放进环境变量，并用 Loader 的 !!js 引用它，
+#    不要把密钥写进补丁或对话。
+
+- insert:
+    - id: mcp-vscode-bridge
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: vscode
+        transport: streamable-http
+        url: http://127.0.0.1:37251/mcp
+        headers:
+          # 令牌见工作区 .vscode/dsh-bridge.json 的 token 字段（未设置时由扩展自动生成）
+          Authorization: Bearer <YOUR_TOKEN>
+        failOnStartupError: false

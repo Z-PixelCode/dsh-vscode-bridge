@@ -1,0 +1,17 @@
+{
+  "url": "http://127.0.0.1:37251/mcp",
+  "token": "dsh-demo-token",
+  "port": 37251,
+  "pid": 19152,
+  "startedAt": "2026-10-16T01:45:53.304Z",
+  "tools": [
+    "get_editor_state",
+    "list_open_editors",
+    "get_diagnostics",
+    "open_file",
+    "apply_edit",
+    "show_diff",
+    "diff_decision",
+    "run_command"
+  ]
+}

@@ -1,0 +1,339 @@
+{
+  "name": "dsh-vscode-bridge",
+  "displayName": "DSH VS Code Bridge",
+  "description": "把 VS Code 暴露成一个 MCP server，让 DeepSeek Harness 能读取编辑器上下文与 Problems、跳转文件、应用编辑并提出可接受/拒绝的 diff。",
+  "version": "0.17.0",
+  "publisher": "Z-PixelCode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Machine Learning",
+    "Other"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "DSH Bridge",
+      "properties": {
+        "dsh-bridge.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "扩展激活后自动启动 MCP 服务端。",
+          "markdownDescription": "激活时自动启动 MCP 桥。\n\n示例：`true`（默认）、`false`（需要时再跑命令 `DSH: 启动桥接服务`）。"
+        },
+        "dsh-bridge.port": {
+          "type": "number",
+          "default": 37251,
+          "description": "MCP 服务端监听端口（仅绑定 127.0.0.1）。",
+          "markdownDescription": "本地 MCP 端点端口（仅绑定 `127.0.0.1`）。默认 `37251`。\n\n端口被占时改一个（例如 `37252`），并记得同步修改 DSH 侧配置里的 url。"
+        },
+        "dsh-bridge.token": {
+          "type": "string",
+          "default": "",
+          "description": "Bearer 令牌。demo 默认值是固定明文，正式使用请改成随机串。",
+          "markdownDescription": "MCP 端点的令牌。**留空 = 自动生成随机令牌**（首次生成后存在本机，并写进工作区 `.vscode/dsh-bridge.json` 供 DSH 侧使用）。\n\n为什么不用固定值：旧版默认的 `dsh-demo-token` 是人人皆知的字符串，公开发布后等于共享密钥。\n\n示例：留空（推荐）、或你自己的随机串 `9f3c1e...`。现有工作区配置文件里的 token 会被沿用，升级不会打断你。"
+        },
+        "dsh-bridge.chat.model": {
+          "type": "string",
+          "default": "deepseek-flash",
+          "description": "侧栏对话使用的模型（走 dsh --profile sdk 的 provider/模型路由）。",
+          "markdownDescription": "侧栏对话用的模型。\n\n可选：`deepseek-flash`（DeepSeek-V41-Flash，快）、`deepseek-v4-pro`（DeepSeek-V4-Pro）。"
+        },
+        "dsh-bridge.chat.provider": {
+          "type": "string",
+          "default": "deepseek-official",
+          "description": "侧栏对话使用的 provider。"
+        },
+        "dsh-bridge.chat.permissionMode": {
+          "type": "string",
+          "default": "",
+          "enum": [
+            "",
+            "read-only",
+            "workspace-write",
+            "danger-full-access"
+          ],
+          "enumDescriptions": [
+            "不覆盖：用 sdk profile 的默认值（通常 workspace-write，改文件不弹审批）",
+            "只读：agent 物理上写不了文件，只能通过桥的提案 → 你按接受（这就是「文件审核」）",
+            "工作区内可写：工作区内直写不弹审批",
+            "完全访问：任何位置都可写，无审批"
+          ],
+          "markdownDescription": "子进程的沙箱模式（写进环境变量）。\n\n可选：\n- `\"\"`（默认）：随 profile，通常是工作区内直写\n- **`read-only`**：改文件必须经审核（推荐）\n- `workspace-write`：工作区内直写，**不经审核**\n- `danger-full-access`：完全访问，**不经审核**"
+        },
+        "dsh-bridge.chat.theme": {
+          "type": "string",
+          "default": "auto",
+          "enum": [
+            "auto",
+            "dark",
+            "light"
+          ],
+          "enumDescriptions": [
+            "自动：跟随 VS Code 主题",
+            "深色：强制深色主题",
+            "浅色：强制浅色主题"
+          ],
+          "description": "侧栏对话的主题模式。"
+        },
+        "dsh-bridge.chat.fontSize": {
+          "type": "number",
+          "default": 12,
+          "minimum": 10,
+          "maximum": 20,
+          "description": "侧栏对话的字体大小（像素）。"
+        },
+        "dsh-bridge.chat.codeHighlight": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否启用代码块语法高亮。"
+        },
+        "dsh-bridge.chat.showLineNumbers": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否在代码块中显示行号。"
+        },
+        "dsh-bridge.chat.reasoningEffort": {
+          "type": "string",
+          "default": "",
+          "enum": [
+            "",
+            "low",
+            "medium",
+            "high"
+          ],
+          "enumDescriptions": [
+            "关闭思考过程",
+            "低：快速响应，少量思考",
+            "中：平衡速度与深度",
+            "高：深度思考，适合复杂任务"
+          ],
+          "description": "思考级别（reasoning effort）。",
+          "markdownDescription": "思考强度。空串 = 默认。\n\n可选：`\"\"`、`low`、`medium`、`high`。"
+        },
+        "dsh-bridge.agentCanApprove": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "允许 agent 自己接受提案。\n\n默认 `false`。打开后等于取消审核，**不建议**。"
+        },
+        "dsh-bridge.reviewGate": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "桥的写操作是否先转成提案等你点头。\n\n示例：`true`（默认，每处改动都要你接受）、`false`（直接落盘）。"
+        },
+        "dsh-bridge.chat.streamReplay": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "是否把已整段到达的回答/思考重放成流式。\n\n示例：`true`（默认，像正在打字）、`false`（一次性出现，最安静）。"
+        },
+        "dsh-bridge.chat.bridgeTools": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "是否把 VS Code 桥的工具挂进对话子进程的 profile。\n\n关掉则对话里的 agent 看不到这些工具（也就没法通过审核门改文件）。"
+        },
+        "dsh-bridge.changeTimeline": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "是否把改动登记到 VS Code 的**时间线**。\n\n默认 `false`：时间线里本来有 Git/本地历史和你自己的改动，掺在一起容易混。\n\n无论开否，点对话里的改动行都能看到「改动前 ↔ 改动后」的隔离 diff。"
+        },
+        "dsh-bridge.chat.hideTools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "*get_review_status*"
+          ],
+          "markdownDescription": "这些工具调用**不在对话里显示**（只读的内部播报），支持 `*` 通配。\n\n示例：\n- `[\"*get_review_status*\"]`（默认）只隐掉批次查询\n- `[\"*get_review_status*\", \"*get_editor_state*\", \"read\", \"glob\", \"grep\"]` 再隐掉只读调用\n- `[\"*\"]` 全部工具卡都不显示（状态行仍会播报）\n- `[]` 一个都不隐"
+        },
+        "dsh-bridge.launcher": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "「dsh」启动器的完整路径。**留空则自动探测**，顺序为：本项 → 环境变量 `DSH_LAUNCHER` → 常见安装目录 → `PATH` 上的 `dsh`。\n\n不想手写路径：命令面板跑 **`DSH: 设置 dsh 启动器路径`**（带文件选择器）。\n\n示例：\n- Windows：`C:\\\\Program Files\\\\DeepSeek Harness\\\\resources\\\\runtime\\\\cli\\\\bin\\\\dsh.cmd`\n- Windows（用户目录安装）：`C:\\\\Users\\\\<you>\\\\AppData\\\\Local\\\\Programs\\\\DeepSeek Harness\\\\resources\\\\runtime\\\\cli\\\\bin\\\\dsh.cmd`\n- macOS：`/Applications/DeepSeek Harness.app/Contents/resources/runtime/cli/bin/dsh`\n- Linux：`/opt/DeepSeek Harness/resources/runtime/cli/bin/dsh`\n- 只想用 PATH：填 `dsh`"
+        },
+        "dsh-bridge.profile": {
+          "type": "string",
+          "default": "sdk",
+          "markdownDescription": "启动 `dsh` 时使用的 profile。默认 `sdk`（对话子进程用）。\n\n示例：`sdk`、`desktop`、`default`。写错了会在子进程启动时报错，日志在「输出 → DSH Bridge」。"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dshBridgeReview",
+          "title": "DSH 对话",
+          "icon": "assets/review.svg"
+        }
+      ]
+    },
+    "views": {
+      "dshBridgeReview": [
+        {
+          "id": "dshBridge.chat",
+          "name": "对话",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "dsh-bridge.start",
+        "title": "DSH Bridge: 启动 MCP 服务端"
+      },
+      {
+        "command": "dsh-bridge.stop",
+        "title": "DSH Bridge: 停止 MCP 服务端"
+      },
+      {
+        "command": "dsh-bridge.copyConfig",
+        "title": "DSH Bridge: 复制连接配置（供 DSH bundle 使用）"
+      },
+      {
+        "command": "dsh-bridge.showLog",
+        "title": "DSH Bridge: 显示调用日志"
+      },
+      {
+        "command": "dsh-bridge.acceptDiff",
+        "title": "DSH Bridge: 接受当前 diff",
+        "icon": "$(check)"
+      },
+      {
+        "command": "dsh-bridge.rejectDiff",
+        "title": "DSH Bridge: 拒绝当前 diff",
+        "icon": "$(close)"
+      },
+      {
+        "command": "dsh-bridge.acceptHunk",
+        "title": "DSH 审核: 接受这一块",
+        "icon": "$(check)"
+      },
+      {
+        "command": "dsh-bridge.rejectHunk",
+        "title": "DSH 审核: 忽略这一块",
+        "icon": "$(close)"
+      },
+      {
+        "command": "dsh-bridge.acceptFile",
+        "title": "DSH 审核: 接受整个文件",
+        "icon": "$(check-all)"
+      },
+      {
+        "command": "dsh-bridge.rejectFile",
+        "title": "DSH 审核: 忽略整个文件",
+        "icon": "$(circle-slash)"
+      },
+      {
+        "command": "dsh-bridge.acceptAll",
+        "title": "DSH 审核: 全部接受",
+        "icon": "$(check-all)"
+      },
+      {
+        "command": "dsh-bridge.rejectAll",
+        "title": "DSH 审核: 全部忽略",
+        "icon": "$(circle-slash)"
+      },
+      {
+        "command": "dsh-bridge.applyBatch",
+        "title": "DSH 审核: 批量接受 / 忽略",
+        "icon": "$(check-all)"
+      },
+      {
+        "command": "dsh-bridge.discardBatch",
+        "title": "DSH 审核: 丢弃整批",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "dsh-bridge.openDiff",
+        "title": "DSH 审核: 打开 diff 预览",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "dsh-bridge.refreshReview",
+        "title": "DSH 审核: 刷新",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "dsh-bridge.focusReview",
+        "title": "DSH 审核: 打开审核面板"
+      },
+      {
+        "command": "dsh-bridge.setLauncher",
+        "title": "设置 dsh 启动器路径"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "dsh-bridge.acceptDiff",
+          "when": "dsh-bridge.hasProposal",
+          "group": "navigation@1"
+        },
+        {
+          "command": "dsh-bridge.rejectDiff",
+          "when": "dsh-bridge.hasProposal",
+          "group": "navigation@2"
+        },
+        {
+          "command": "dsh-bridge.acceptAll",
+          "when": "dsh-bridge.hasProposal",
+          "group": "navigation@3"
+        },
+        {
+          "command": "dsh-bridge.rejectAll",
+          "when": "dsh-bridge.hasProposal",
+          "group": "navigation@4"
+        }
+      ]
+    }
+  },
+  "author": {
+    "name": "Z-PixelCode"
+  },
+  "icon": "assets/icon.png",
+  "homepage": "https://github.com/Z-PixelCode/dsh-vscode-bridge#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Z-PixelCode/dsh-vscode-bridge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Z-PixelCode/dsh-vscode-bridge/issues"
+  },
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "dsh",
+    "ai",
+    "agent",
+    "mcp",
+    "chat",
+    "code review",
+    "diff",
+    "approval",
+    "copilot alternative"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "galleryBanner": {
+    "color": "#1f6feb",
+    "theme": "dark"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "需要启动本地 dsh 子进程并写入工作区，不在不可信工作区运行。"
+    }
+  },
+  "scripts": {
+    "test": "node build/run-tests.cjs",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  }
+}

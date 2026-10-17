@@ -1,0 +1,24 @@
+# 打包产物
+*.vsix
+dist/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# 运行痕迹
+*.log
+dsh-bridge-trace.log
+
+# 编辑器
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 打包暂存目录（pack 脚本生成，等于整份扩展副本）
+build/vsix/
