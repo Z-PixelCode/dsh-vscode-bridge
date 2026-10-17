@@ -64,7 +64,8 @@ If it still cannot start, the chat panel reports the failure and the **Output â†
 
 - **Marketplace**: search **DSH VS Code Bridge**, or
   `code --install-extension Z-PixelCode.dsh-vscode-bridge`
-- **From a VSIX**: `code --install-extension dsh-vscode-bridge-<version>.vsix`
+- **Direct download**: grab the VSIX from [Releases](https://github.com/Z-PixelCode/dsh-vscode-bridge/releases/latest) and run
+  `code --install-extension dsh-vscode-bridge-<version>.vsix`
 - After installing a new version: **Developer: Reload Window**. The version chip in the chat header tells you which build is actually running.
 
 ## Quick start

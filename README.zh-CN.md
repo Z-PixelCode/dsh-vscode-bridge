@@ -64,7 +64,8 @@
 
 - **商城**：搜索 **DSH VS Code Bridge**，或
   `code --install-extension Z-PixelCode.dsh-vscode-bridge`
-- **本地 VSIX**：`code --install-extension dsh-vscode-bridge-<版本>.vsix`
+- **直接下载**：从 [Releases](https://github.com/Z-PixelCode/dsh-vscode-bridge/releases/latest) 拿 VSIX，然后
+  `code --install-extension dsh-vscode-bridge-<版本>.vsix`
 - **装了新版本后必须 `Developer: Reload Window`**。对话面板顶部的版本芯片会告诉你实际在跑哪一版。
 
 ## 快速上手

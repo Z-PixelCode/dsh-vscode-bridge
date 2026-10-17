@@ -1,0 +1,44 @@
+name: Publish to Marketplace
+
+# 为什么用 Actions 发布：本地 `vsce publish` 要直连 marketplace，
+# 部分网络下会超时（表现为"没有任何提示"）。GitHub 的 runner 不受此限。
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 只打包不发布（下载 artifact 手动上传）
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run tests first
+        run: node build/run-tests.cjs
+
+      - name: Package VSIX
+        run: npx --yes @vscode/vsce package --out dsh-vscode-bridge.vsix
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix
+          path: dsh-vscode-bridge.vsix
+
+      - name: Publish to VS Code Marketplace
+        if: ${{ inputs.dry_run == false }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::error::缺少仓库 Secret VSCE_PAT。Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          npx --yes @vscode/vsce publish --packagePath dsh-vscode-bridge.vsix -p "$VSCE_PAT"
