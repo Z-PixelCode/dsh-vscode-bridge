@@ -578,7 +578,7 @@ t('没有 stream 或全是空块 -> 空计划（走"直接显示"路径）', () 
 console.log('\n[11] 工具结果摘要（别把原始 XML 吐给用户）');
 
 t('read 工具的 XML 包装被抽成"文件名 · N 行"', () => {
-  const r = S.summarizeToolResult('read', '<path>d:\\test_demo\\hello.py</path>\n<type>file</type>\n<content>\nline1\nline2\n</content>');
+  const r = S.summarizeToolResult('read', '<path>d:\\work\\hello.py</path>\n<type>file</type>\n<content>\nline1\nline2\n</content>');
   assert.strictEqual(r.summary, 'hello.py · 2 行');
   assert.strictEqual(r.body, 'line1\nline2');
 });
@@ -595,7 +595,7 @@ t('空结果不炸', () => {
 });
 
 t('JSON 结果 -> 一行紧凑摘要 + 格式化正文（翻译 transcript 里那坨原始 JSON）', () => {
-  const big = JSON.stringify({ focusInEditor: true, hasEditor: true, workspaceFolders: ['d:\\test_demo'], openEditors: [] });
+  const big = JSON.stringify({ focusInEditor: true, hasEditor: true, workspaceFolders: ['d:\\work'], openEditors: [] });
   const r = S.summarizeToolResult('mcp__vscode__get_editor_state', big);
   assert.strictEqual(r.summary.includes('\n'), false, '摘要必须是一行');
   assert.ok(r.summary.length <= 141, `摘要过长: ${r.summary.length}`);
@@ -621,7 +621,7 @@ t('pwsh 取 description 当细节', () => {
 });
 
 t('read 取文件路径的basename', () => {
-  assert.strictEqual(S.describeToolCall('read', JSON.stringify({ file_path: 'd:\\test_demo\\hello.py' })), '正在读取文件 · hello.py');
+  assert.strictEqual(S.describeToolCall('read', JSON.stringify({ file_path: 'd:\\work\\hello.py' })), '正在读取文件 · hello.py');
   assert.strictEqual(S.describeToolCall('read', JSON.stringify({ file_path: '/a/b/c.md' })), '正在读取文件 · c.md');
 });
 
@@ -659,11 +659,11 @@ console.log('\n[13] 工具参数摘要（别把整份文件内容铺在对话里
 t('propose_changes -> "N 个文件 · 前几个名字"', () => {
   const args = JSON.stringify({
     changes: [
-      { path: 'd:\\test_demo\\calc.py', content: 'x'.repeat(300) },
-      { path: 'd:\\test_demo\\grade.py', content: 'y' },
-      { path: 'd:\\test_demo\\config.json', content: 'z' },
-      { path: 'd:\\test_demo\\NOTES.md', content: 'w' },
-      { path: 'd:\\test_demo\\scripts\\run.ps1', content: 'v' }
+      { path: 'd:\\work\\calc.py', content: 'x'.repeat(300) },
+      { path: 'd:\\work\\grade.py', content: 'y' },
+      { path: 'd:\\work\\config.json', content: 'z' },
+      { path: 'd:\\work\\NOTES.md', content: 'w' },
+      { path: 'd:\\work\\scripts\\run.ps1', content: 'v' }
     ]
   });
   const r = S.summarizeToolArgs('mcp__vscode__propose_changes', args);
@@ -677,7 +677,7 @@ t('propose_changes 少于 5 个不带"等 N 个"', () => {
 });
 
 t('write_file 带内容 -> 文件名 · N 行 + 抽出代码块', () => {
-  const r = S.summarizeToolArgs('write_file', JSON.stringify({ path: 'd:\\test_demo\\math_utils.py', content: 'def add(a, b):\n    return a + b\n' }));
+  const r = S.summarizeToolArgs('write_file', JSON.stringify({ path: 'd:\\work\\math_utils.py', content: 'def add(a, b):\n    return a + b\n' }));
   assert.strictEqual(r.summary, 'math_utils.py · 2 行');
   assert.ok(r.code, '应当抽出 code');
   assert.strictEqual(r.code.lang, 'python', '按扩展名推语言');
@@ -717,7 +717,7 @@ t('参数不是 JSON 时退化成截断原文，不炸', () => {
 console.log('\n[14] 旧记录迁移（重载后老工具卡不再展开、摘要重算）');
 
 t('旧工具条目：open 被删、摘要从 args/result 重算', () => {
-  const big = JSON.stringify({ changes: [{ path: 'd:\\test_demo\\calc.py', content: 'def a()...' }, { path: 'd:\\test_demo\\grade.py', content: 'x' }] });
+  const big = JSON.stringify({ changes: [{ path: 'd:\\work\\calc.py', content: 'def a()...' }, { path: 'd:\\work\\grade.py', content: 'x' }] });
   const st = S.normalizeState({
     activeId: 'a',
     sessions: [{
@@ -869,7 +869,7 @@ t('回归：已有 argSummary 的老条目也要补出 codeHtml', () => {
       entries: [{
         id: 't1', role: 'tool', name: 'mcp__vscode__write_file',
         argSummary: 'math_utils.py · 61 行', // ← 已有摘要（0.10.1~0.11.1 建的）
-        args: JSON.stringify({ path: 'd:\\test_demo\\mypkg\\math_utils.py', content: 'def add(a, b):\n    return a + b\n' }),
+        args: JSON.stringify({ path: 'd:\\work\\mypkg\\math_utils.py', content: 'def add(a, b):\n    return a + b\n' }),
         result: '{\n  "gated": true,\n... (共 12 行)',
         summary: '{'
       }]
@@ -882,7 +882,7 @@ t('回归：已有 argSummary 的老条目也要补出 codeHtml', () => {
 });
 
 t('read 结果被截断（<content> 未闭合）-> 别把 XML 当摘要', () => {
-  const truncated = '<path>d:\\test_demo\\mypkg\\math_utils.py</path>\n<type>file</type>\n<content>\nline1\nline2\nline3\n... (共 85 行)';
+  const truncated = '<path>d:\\work\\mypkg\\math_utils.py</path>\n<type>file</type>\n<content>\nline1\nline2\nline3\n... (共 85 行)';
   const r = S.summarizeToolResult('read', truncated);
   assert.strictEqual(r.summary, 'math_utils.py · 已截断（约 3 行）', `实际: ${r.summary}`);
   assert.ok(!r.summary.includes('<path>'), '摘要里不该再有 XML');
@@ -911,14 +911,14 @@ t('showArgs：路径/文件列表类不再铺原始 JSON；命令类用代码块
 });
 
 t('命令类结果：说"N 行输出"而不是"取首行"（回归：… · Python 3.13.9）', () => {
-  const out = 'Python 3.13.9\nPython 3.14.0\n\n    Directory: D:\\test_demo\n';
+  const out = 'Python 3.13.9\nPython 3.14.0\n\n    Directory: D:\\work\n';
   const r = S.summarizeToolResult('pwsh', out);
   assert.strictEqual(r.summary, '4 行输出', `实际: ${r.summary}`);
   assert.ok(!r.summary.includes('3.13.9'), '首行不该混进摘要');
   assert.strictEqual(S.summarizeToolResult('pwsh', 'done').summary, 'done');
   assert.strictEqual(S.summarizeToolResult('pwsh', '').summary, '无输出');
   // 截断标记里的行数优先（否则摘要说 4 行、正文说 24 行，自相矛盾）
-  const cut = 'Python 3.13.9\nPython 3.14.0\n\n    Directory: D:\\test_demo\n... (共 24 行)';
+  const cut = 'Python 3.13.9\nPython 3.14.0\n\n    Directory: D:\\work\n... (共 24 行)';
   assert.strictEqual(S.summarizeToolResult('pwsh', cut).summary, '24 行输出（已截断）');
   // 非命令类工具仍取首行（避免误伤通用工具）
   assert.strictEqual(S.summarizeToolResult('other', 'Hello, World!\n第二行').summary, 'Hello, World!');
@@ -949,7 +949,7 @@ t('单元格里的行内格式仍然生效；无分隔行的管道文本不算�
 });
 
 t('read 内容被整段截掉 -> 用标记里的真实行数（回归：已截断（约 0 行））', () => {
-  const cut = '<path>d:\\test_demo\\example.py</path>\n<type>file</type>\n<content>\n... (共 163 行)';
+  const cut = '<path>d:\\work\\example.py</path>\n<type>file</type>\n<content>\n... (共 163 行)';
   const r = S.summarizeToolResult('read', cut);
   assert.strictEqual(r.summary, 'example.py · 已截断（共 163 行）', `实际: ${r.summary}`);
   assert.ok(!r.summary.includes('约 0 行'), '不该出现"约 0 行"');

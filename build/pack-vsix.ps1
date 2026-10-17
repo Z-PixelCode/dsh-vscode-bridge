@@ -1,7 +1,7 @@
 ﻿# 打包 VS Code 扩展为 .vsix（不依赖 @vscode/vsce，不需要联网）
 #
 # 用法（Windows PowerShell 5.1 或 PowerShell 7 均可）:
-#   powershell -NoProfile -ExecutionPolicy Bypass -File "D:\vscode tool\build\pack-vsix.ps1"
+#   powershell -NoProfile -ExecutionPolicy Bypass -File "<扩展目录>\build\pack-vsix.ps1"
 #
 # 要点：
 #  1) extension.vsixmanifest 由 package.json 自动生成，版本号不会再对不上

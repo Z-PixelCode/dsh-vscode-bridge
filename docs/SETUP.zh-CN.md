@@ -9,7 +9,7 @@
 | 组件 | 状态 |
 |---|---|
 | VS Code 扩展 `dsh-vscode-bridge` | 已装 **0.1.3**（8 个工具，监听 `127.0.0.1:37251`） |
-| 桥的新版 **0.2.0** | ✅ 已打包在 `D:\vscode tool\dsh-vscode-bridge-0.2.0.vsix`，**尚未安装** |
+| 桥的新版 **<版本>** | ✅ 已打包在 `<扩展目录>\dsh-vscode-bridge-<版本>.vsix`，**尚未安装** |
 | DSH 侧 bundle | ✅ 已写入 **web** 与 **desktop** 两个 profile 的 `cordis.patch.yml` |
 | 效果 | ✅ **desktop profile 被热加载**（未重启 app），agent 已能直接调用 `mcp__vscode__*` |
 
@@ -30,7 +30,7 @@
 
 ```
 Ctrl+Shift+X → 右上角 ... → Install from VSIX...
-  → D:\vscode tool\dsh-vscode-bridge-0.2.0.vsix
+  → <扩展目录>\dsh-vscode-bridge-<版本>.vsix
 然后 Ctrl+Shift+P → Developer: Reload Window
 ```
 
@@ -124,7 +124,7 @@ VS Code 弹出并排 diff（原生 diff 引擎，不是简易面板）
 | 桥的 9 个工具 | `get_editor_state` `list_open_editors` `get_diagnostics` `open_file` `apply_edit` `write_file` `show_diff` `diff_decision` `run_command` |
 | 模型侧工具名 | `mcp__vscode__<tool>` |
 | DSH 补丁位置 | `~/.dsh/profiles/{web,desktop}/cordis.patch.yml` |
-| 桥的代码/打包 | `D:\vscode tool\`（`build\pack-vsix.ps1` 重新打包，注意 PS 5.1 需要 UTF-8 BOM） |
+| 桥的代码/打包 | `<扩展目录>\`（`build\pack-vsix.ps1` 重新打包，注意 PS 5.1 需要 UTF-8 BOM） |
 | 已验证的测试 | `node test\protocol-test.cjs` → 17 项全过（不需要 VS Code） |
 
 ---
