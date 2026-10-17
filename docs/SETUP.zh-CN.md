@@ -35,7 +35,7 @@ Ctrl+Shift+X → 右上角 ... → Install from VSIX...
 ```
 
 验证：右下角状态栏点 `🔌 DSH:37251` → **显示调用日志**，头部应显示 `工具数: 9`；或跑一次
-`python dsh_bridge.py ping`（在 `D:\test_demo` 下），它会显示服务端版本 **v0.2.0**。
+`python dsh_bridge.py ping`（在 `D:\work\demo` 下），它会显示服务端版本 **v0.2.0**。
 
 ### 步骤 2：让两边的目录一致（**关键，不做这步审核没有意义**）
 
@@ -45,7 +45,7 @@ Ctrl+Shift+X → 右上角 ... → Install from VSIX...
 
 你的 `~/.dsh` 里已经注册过 `default-workspace`（这一串会话用的就是它），所以新会话会继承它，**子进程 cwd 那个兜底永远轮不到**。
 
-做法：在 DSH 面板/网页的**侧栏 Workspaces 区域**里选/添加 `D:\test_demo`，**然后在这个工作区下新建会话**。
+做法：在 DSH 面板/网页的**侧栏 Workspaces 区域**里选/添加 `D:\work\demo`，**然后在这个工作区下新建会话**。
 
 验证：在新会话里让我"报一下你的工作目录"，或直接看我生成的文件落在哪。
 
@@ -105,7 +105,7 @@ VS Code 弹出并排 diff（原生 diff 引擎，不是简易面板）
 
 | 症状 | 查这里 |
 |---|---|
-| 面板起不来 / `dsh not found` | `D:\test_demo\.vscode\settings.json` 里的 `dsh.desktopCommandPath`；扩展默认只在 `%LOCALAPPDATA%\Programs` 下探测，而 app 装在 `D:\` |
+| 面板起不来 / `dsh not found` | `D:\work\demo\.vscode\settings.json` 里的 `dsh.desktopCommandPath`；扩展默认只在 `%LOCALAPPDATA%\Programs` 下探测，而 app 装在 `D:\` |
 | 桥没监听了 | `%TEMP%\dsh-bridge-trace.log`（UTF-8，扩展每一步都写）；或 VS Code「输出 → DSH Bridge」 |
 | 我想看桥被调了什么 | 状态栏 `🔌 DSH:37251` → **显示调用日志**（每条可展开/复制） |
 | DSH 侧没出现 `mcp__vscode__*` | 检查 `~/.dsh/profiles/<profile>/cordis.patch.yml` 里的 `mcp-vscode-bridge` 行；DSH 启动日志里找 mcp-client 的连接报错 |
